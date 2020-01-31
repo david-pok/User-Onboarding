@@ -5,7 +5,6 @@ import axios from "axios";
 import styled from "styled-components";
 import roster from "../dummyData";
 
-
 const MemberList = styled.div`
   display: flex;
 `;
@@ -19,10 +18,12 @@ const MemberCard = styled.div`
 `;
 
 const TeamForm = ({ values, errors, touched, status, addNewMember }) => {
+  // console.log('values', resetForm)
+
   const [members, setMembers] = useState(roster);
 
   useEffect(() => {
-    console.log("status has changed", status);
+    // console.log("status has changed", status);
     status && setMembers(members => [...members, status]);
   }, [status]);
 
@@ -76,6 +77,7 @@ const TeamForm = ({ values, errors, touched, status, addNewMember }) => {
           <label htmlFor="tos">
             Terms of Service:
             <Field id="tos" type="checkbox" name="tos" check={values.tos} />
+            {touched.tos && errors.tos && <p>{errors.tos}</p>}
           </label>
         </div>
 
@@ -140,10 +142,19 @@ const TeamFormik = withFormik({
     };
   },
   validationSchema: Yup.object().shape({
-    name: Yup.string().required()
+    name: Yup.string().required(),
+    tos: Yup.boolean()
+      .required("The terms must be accepted")
+      .oneOf([true], "The Terms must be accepted")
   }),
-  handleSubmit(values, { setStatus }, formikBag, addNewMember, setMember) {
-    console.log("submitd", values);
+  handleSubmit(
+    values,
+    { setStatus, resetForm },
+    formikBag,
+    addNewMember,
+    setMember
+  ) {
+    // console.log("submitd", values);
     // addNewMember(values);
     // setMember({ name: "", email: "", password: "", team: "", info: "" });
     axios
@@ -151,6 +162,7 @@ const TeamFormik = withFormik({
       .then(response => {
         console.log("response", response);
         setStatus(response.data);
+        resetForm();
       })
       .catch(error => console.log("error making post", error));
   }
